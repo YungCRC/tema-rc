@@ -1,5 +1,3 @@
-/* a server in the unix domain.  The pathname of 
-   the socket address is passed as an argument */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -12,11 +10,11 @@ void intHandler();
 
 void error(const char *);
 
-static volatile int keep_running = 1;
+int sockfd, newsockfd;
 
 int main(int argc, char *argv[])
 {
-   int sockfd, newsockfd, servlen, n;
+   int servlen, n;
    socklen_t clilen;
    struct sockaddr_un  cli_addr, serv_addr;
    char buf[80];
@@ -39,7 +37,7 @@ int main(int argc, char *argv[])
         sockfd,(struct sockaddr *)&cli_addr,&clilen);
    if (newsockfd < 0) 
         error("accepting");
-   while (keep_running)
+   while (1)
      {
        n=read(newsockfd,buf,80);
        /* printf("A connection has been established\n"); */
@@ -53,8 +51,6 @@ int main(int argc, char *argv[])
        write (newsockfd, buf, sizeof(buf));
        /* write(newsockfd,"I got your message\n",19); */
      }
-   close(newsockfd);
-   close(sockfd);
    return 0;
 }
 
@@ -66,6 +62,8 @@ void error(const char *msg)
 
 void intHandler()
 {
-    printf("\nCaught interrupt\n Exiting\n");
-    keep_running = 0;    
+    printf("\nCaught interrupt\nExiting\n");
+    close(newsockfd);
+    close(sockfd);
+    exit(0);
 }

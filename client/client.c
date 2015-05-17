@@ -1,4 +1,3 @@
-/* a client in the unix domain */
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -11,11 +10,10 @@ void error(const char *);
 
 void intHandler();
 
-static volatile int keep_running = 1;
-
+int sockfd;
 int main(int argc, char *argv[])
 {
-   int sockfd, servlen,n;
+   int servlen,n;
    struct sockaddr_un  serv_addr;
    char buffer[82];
 
@@ -45,7 +43,6 @@ int main(int argc, char *argv[])
        write(1,buffer,n);
        write(1, "\n", 1);
      }
-   close(sockfd);
    return 0;
 }
 
@@ -58,6 +55,7 @@ void error(const char *msg)
 void intHandler()
 {
     printf("\nCaught interrupt\n Exiting\n");
-    keep_running = 0;
+    close(sockfd);
+    exit(0);
 }
 
